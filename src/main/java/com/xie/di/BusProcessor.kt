@@ -385,15 +385,22 @@ class BusProcessor : AbstractProcessor() {
 
     private fun fetchServiceInfo(e: Element) {
         val createModel = e.getAnnotation(Service::class.java).createModel
-        val key = if (e is TypeElement) {
-            e.qualifiedName.toString()
+        val type = if (e is TypeElement) {
+            e
         } else {
-            e.enclosingElement.toString()
+            (e.enclosingElement as TypeElement)
         }
-        val info = get(key)
+        val key = ArrayList<String>()
+        val receiver = type.qualifiedName.toString()
+        key.add(receiver)
+        key.add(type.superclass.toString())
+        key.addAll(type.interfaces.map { it.toString() })
+        val info = get(type.qualifiedName.toString())
         val argsSignature = Utils.getSignature(e)
         info.service = ServiceInfo(argsSignature)
-        typeMete[key] = TypeMete(createModel, true, key)
+        for(k in key){
+            typeMete[k] = TypeMete(createModel, true, receiver)
+        }
     }
 
 
